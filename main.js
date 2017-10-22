@@ -10,6 +10,11 @@ const Entities	= require('html-entities').AllHtmlEntities;
 const entities	=	new Entities();
 const async			= require('async');
 const colors		= require('colors/safe');
+const fs				= require('fs');
+
+// Error log
+const errorLog = fs.createWriteStream(path.join(__dirname, 'error.log'));
+const logError = str => errorLog.write(str);
 
 // Pretty simple setup for commander
 program
@@ -116,12 +121,13 @@ const getPage = (url, callback) => {
 const main = () => {
 	getPage(getURL(program.args), (err, body) => {
 		if (err) {
-			console.error(err);
+			logError(err);
+			console.error('Could not load search results, see error.log for details');
 			process.exit(1);
 		} else {
 			const document = new JSDOM(body).window.document;
 			parseSearchResults(document, (err, results) => {
-				if (err) console.error(err);
+				if (err) logError(err);
 				if (results.length > 1) {
 					console.log('Results (' + results.length + '):');
 					async.eachOf(results, (result, index, callback) => {
@@ -155,21 +161,24 @@ const main = () => {
 								}
 							}
 						}, (err, input) => {
-							if (err) console.error(err);
+							if (err) logError(err);
 							getTab(results[input.selection - 1].url, (err, tab) => {
 								if (err) {
-									console.error(err);
+									logError(err);
+									console.error('Tab page could not be loaded, see error.log for details');
 									process.exit(1);
 								} else {
 									console.log(tab);
 								}
 							});
+							prompt.stop();
 						});
 					});
 				} else {
 					getTab(results[0].url, (err, tab) => {
 						if (err) {
-							console.error(err);
+							logError(err);
+							console.error('Tab page could not be loaded, see error.log for details');
 							process.exit(1);
 						} else {
 							console.log(tab);
@@ -182,3 +191,19 @@ const main = () => {
 };
 
 main();
+
+// Error handling
+if (process.platform === 'win32') {
+	let rl = require('readline').createInterface({
+		input: process.stdin,
+		output: process.stdout
+	});
+
+	rl.on('SIGINT', () => {
+		process.emit('SIGINT');
+	});
+}
+
+process.on('SIGINT', () => {
+	process.exit();
+});

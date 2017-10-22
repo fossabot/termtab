@@ -6,7 +6,7 @@ const prompt		= require('prompt');
 const request		= require('request');
 const jsdom			= require('jsdom');
 const { JSDOM }	= jsdom;
-const Entities	= require('html-entities').XmlEntities;
+const Entities	= require('html-entities').AllHtmlEntities;
 const entities	=	new Entities();
 const async			= require('async');
 const colors		= require('colors/safe');
@@ -51,7 +51,7 @@ const parseSearchResults = (document, callback) => {
 	async.each(resultRows, (row, doneWithRow) => {
 		const songEl = row.querySelector('a.result-link');
 		const artistEl = row.querySelector('a.search_art');
-		const artist = artistEl ? entities.decode(artistEl.innerHTML.trim().replace(/<b>|<\/b>/g, '')) : currentArtist;
+		const artist = artistEl ? entities.decode(artistEl.innerHTML).trim().replace(/<b>|<\/b>/g, '') : currentArtist;
 		if (artistEl) currentArtist = artist;
 		// We only want chords and tabs, none of that tab pro shit
 		if (songEl) {
@@ -127,10 +127,10 @@ const main = () => {
 					async.eachOf(results, (result, index, callback) => {
 						const preOutput = '[' + (index + 1) + '] ';
 						const output = result.artist + ' - ' + result.song + ' - ' + result.rating + ' - ' + result.type.toUpperCase();
-						if (result.rating >= 4.5) {
-							console.log(preOutput + colors.green(output));
-						} else if (result.rating >= 3.5) {
+						if (result.rating >= 5) {
 							console.log(preOutput + colors.yellow(output));
+						} else if (result.rating >= 3.5) {
+							console.log(preOutput + colors.cyan(output));
 						} else {
 							console.log(preOutput + colors.red(output));
 						}

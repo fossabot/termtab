@@ -1,6 +1,6 @@
 {
   "name": "termtab",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A command line interface for finding and displaying guitar chords and tabs",
   "main": "main.js",
   "repository": {

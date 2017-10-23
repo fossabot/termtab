@@ -11,9 +11,11 @@ const entities	=	new Entities();
 const async			= require('async');
 const colors		= require('colors/safe');
 const fs				= require('fs');
+const homeDir		= require('os').homedir();
 
 // Error log
-const errorLog = fs.createWriteStream(path.join(__dirname, 'error.log'));
+if (!fs.existsSync(path.join(homeDir, '.termtab'))) fs.mkdirSync(path.join(homeDir, '.termtab'));
+const errorLog = fs.createWriteStream(path.join(homeDir, '.termtab', 'error.log'));
 const logError = str => errorLog.write(str);
 
 // Pretty simple setup for commander
